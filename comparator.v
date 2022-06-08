@@ -23,14 +23,13 @@
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
-
-
 module timeTriggered(
                      clk,
                      rst,
                      GTB,
                      schedule,
-                     tx
+                     tx,
+                     portId
                      );
 
   input clk;
@@ -38,6 +37,7 @@ module timeTriggered(
   input [31:0] GTB;
   input [31:0] schedule;
   output reg tx; 
+  output reg [2:0] portId;
   
   integer counter;
   
@@ -50,20 +50,23 @@ module timeTriggered(
         end 
       else 
         begin
-          if (GTB == schedule)
+          if (GTB == schedule [28:0])
             begin
               counter  <= counter + 1;
               tx <= 1;
+              portId <= schedule [31:29];
               if (counter == 1)
                 begin
                   tx <= 0;
                   counter <= 0;
+                  portId <= 0;
                 end 
             end
           else
             begin
               tx <= 0;
               counter <= 0;
+              portId <= 0;
             end           
         end 
     end 
@@ -81,6 +84,7 @@ module tbTT(
   reg [31:0] GTB;
   reg [31:0] schedule;
   wire  tx; 
+  wire [2:0] portId;
   
     
     timeTriggered DUT(
@@ -88,7 +92,8 @@ module tbTT(
                      rst,
                      GTB,
                      schedule,
-                     tx
+                     tx,
+                     portId
                      );
 
   initial
@@ -100,13 +105,14 @@ module tbTT(
       #10 
       rst = 0;
       #100 
-      schedule = 32'd5;
+      schedule = {3'd5,29'd5};
       #10 
       schedule =32'd8;
       #100 
-      schedule = 32'd5;
+      schedule = {3'd2,29'd5};
       #10 
       schedule = 32'd6; 
+     
     end 
     
   always 
